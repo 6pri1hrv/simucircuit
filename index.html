@@ -1,0 +1,165 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>SimuCircuit — simulateur de circuits électroniques hors ligne</title>
+<meta name="description" content="Dessine un montage, écris le programme, et teste-le sur une carte Arduino, ESP32 ou Raspberry Pi Pico simulée, sans connexion internet.">
+<style>
+  :root { --fond: #f4f6f8; --carte: #fff; --texte: #1c2733; --doux: #5b6b7b; --bleu: #1f3a5f; --vert: #2e9e4f; --trait: #d5dbe1; --alerte: #fff4d6; }
+  @media (prefers-color-scheme: dark) { :root { --fond: #10161d; --carte: #18212b; --texte: #e6edf3; --doux: #9fb0c0; --trait: #2b3846; --alerte: #3a3010; } }
+  * { box-sizing: border-box; }
+  body { margin: 0; font: 17px/1.55 "Segoe UI", system-ui, sans-serif; color: var(--texte); background: var(--fond); }
+  header { background: var(--bleu); color: #fff; padding: 56px 16px 64px; text-align: center; }
+  header h1 { margin: 0; font-size: clamp(34px, 7vw, 56px); letter-spacing: -1px; }
+  header p { margin: 10px auto 26px; max-width: 640px; font-size: 19px; opacity: .9; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 16px 40px; }
+  section { margin-top: 44px; }
+  h2 { font-size: 26px; margin: 0 0 12px; }
+  .bouton { display: inline-block; background: var(--vert); color: #fff; font-weight: 600; font-size: 19px; padding: 14px 26px; border-radius: 10px; text-decoration: none; }
+  .bouton:hover { filter: brightness(1.08); }
+  .sous-bouton { display: block; margin-top: 12px; color: #dbe7f5; font-size: 15px; }
+  .sous-bouton a { color: #fff; }
+  #bandeau { margin: -24px auto 0; max-width: 760px; background: var(--carte); border: 1px solid var(--trait); border-radius: 12px; padding: 14px 18px; text-align: center; box-shadow: 0 6px 18px #0002; }
+  #bandeau[hidden] { display: none; }
+  .captures { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 14px; }
+  figure { margin: 0; background: var(--carte); border: 1px solid var(--trait); border-radius: 10px; overflow: hidden; }
+  figure img { display: block; width: 100%; height: auto; }
+  figcaption { padding: 8px 12px; font-size: 14px; color: var(--doux); }
+  .colonnes { display: grid; grid-template-columns: repeat(auto-fit, minmax(290px, 1fr)); gap: 16px; }
+  .carte { background: var(--carte); border: 1px solid var(--trait); border-radius: 12px; padding: 16px 20px; }
+  .carte h3 { margin: 0 0 6px; font-size: 18px; }
+  ul, ol { margin: 6px 0; padding-left: 22px; }
+  li { margin: 4px 0; }
+  .note { background: var(--alerte); border-radius: 10px; padding: 12px 16px; }
+  pre { white-space: pre-wrap; font: inherit; margin: 8px 0 0; color: var(--doux); }
+  code { background: #8882; padding: 1px 6px; border-radius: 5px; }
+  a { color: #2a7be4; }
+  footer { border-top: 1px solid var(--trait); margin-top: 48px; padding: 22px 16px 40px; font-size: 14px; color: var(--doux); text-align: center; }
+</style>
+</head>
+<body>
+<header>
+  <h1>SimuCircuit</h1>
+  <p>Dessine ton montage, écris ton programme, et teste-le avant d'acheter les composants. Sur ton ordinateur, sans connexion internet.</p>
+  <a class="bouton" id="telecharger" href="#installer">Télécharger SimuCircuit</a>
+  <span class="sous-bouton"><span id="taille-complete">Archive protégée par mot de passe.</span> Déjà installé ? <a id="maj" href="#mettre-a-jour">Télécharger la mise à jour</a> <span id="taille-maj"></span></span>
+</header>
+<main>
+  <div id="bandeau" hidden></div>
+
+  <section>
+    <div class="captures">
+      <figure><img src="captures/arduino.png" alt="Un montage Arduino Uno avec servomoteur, écran LCD, multimètre et oscilloscope" loading="lazy"><figcaption>Arduino Uno : servomoteur, écran LCD, multimètre et oscilloscope</figcaption></figure>
+      <figure><img src="captures/esp32.png" alt="Un montage ESP32 avec une LED, un potentiomètre et un écran OLED" loading="lazy"><figcaption>ESP32 : LED en PWM, potentiomètre et écran OLED</figcaption></figure>
+      <figure><img src="captures/interface.png" alt="L'interface : palette de composants, plan de travail et code" loading="lazy"><figcaption>Sans carte : un chenillard NE555 + CD4017, avec la palette de composants</figcaption></figure>
+    </div>
+  </section>
+
+  <section class="colonnes">
+    <div class="carte">
+      <h3>Ce que fait le logiciel</h3>
+      <ul>
+        <li><strong>Le vrai programme tourne</strong> : ton code est compilé puis exécuté sur une carte émulée — Arduino Uno, Nano, Pro Mini, ATmega328P, ESP32, ESP32-S3, Raspberry Pi Pico (C++ et MicroPython).</li>
+        <li><strong>170 composants</strong> : LED, afficheurs, moteurs, capteurs, circuits logiques 74HC et CD4000, NE555, amplificateurs opérationnels, relais, piles…</li>
+        <li><strong>Simulation électrique</strong> : tensions, courants, condensateurs, transistors, régulateurs.</li>
+        <li><strong>Alertes réalistes</strong> : LED sans résistance qui grille, broche surchargée, court-circuit, circuit non alimenté.</li>
+        <li><strong>Instruments</strong> : multimètre, oscilloscope, analyseur logique, générateur de fonctions, alimentation réglable.</li>
+        <li>Liste d'achat des composants du montage, exemples prêts à lancer.</li>
+      </ul>
+    </div>
+    <div class="carte">
+      <h3>Ce qu'il ne fait pas</h3>
+      <ul>
+        <li>Le <strong>WiFi</strong> et le <strong>Bluetooth</strong> de l'ESP32.</li>
+        <li>Le bus <strong>SPI</strong> (écrans TFT, cartes SD).</li>
+        <li>L'Arduino Mega, l'ESP32-C3, l'ATtiny85.</li>
+        <li>L'électronique rapide : au-delà de quelques centaines de hertz, les signaux analogiques sont approximatifs.</li>
+        <li>Les modèles sont simplifiés : justes pour comprendre et vérifier un montage, pas pour dimensionner un circuit de précision.</li>
+      </ul>
+      <h3 style="margin-top:14px">Configuration requise</h3>
+      <ul>
+        <li>Windows 10 ou 11, 64 bits</li>
+        <li>Environ 4 Go d'espace disque</li>
+        <li>Aucune connexion internet après l'installation</li>
+      </ul>
+    </div>
+  </section>
+
+  <section id="version" class="carte">
+    <h2>Dernière version : <span id="numero">voir la page des versions</span></h2>
+    <div id="date" style="color:var(--doux)"></div>
+    <pre id="nouveautes"></pre>
+  </section>
+
+  <section id="installer">
+    <h2>Installer</h2>
+    <ol>
+      <li><strong>Demande le mot de passe à l'auteur.</strong> Le téléchargement est une archive chiffrée : sans mot de passe, elle ne s'ouvre pas.</li>
+      <li>Télécharge l'archive (bouton en haut de la page), puis ouvre-la avec <a href="https://www.7-zip.org/" rel="noopener">7-Zip</a> (gratuit) : clic droit → 7-Zip → Extraire.</li>
+      <li>Lance <code>SimuCircuit-Installation</code>. Windows peut afficher « Windows a protégé votre ordinateur » (SmartScreen), parce que le programme n'est pas signé : clique sur <strong>Informations complémentaires</strong>, puis <strong>Exécuter quand même</strong>.</li>
+      <li>Garde le dossier proposé, <code>C:\SimuCircuit</code>. Ailleurs, la compilation ESP32 peut échouer à cause de chemins trop longs.</li>
+      <li>L'installation dure environ 10 minutes (des dizaines de milliers de petits fichiers : compilateurs et émulateur).</li>
+    </ol>
+    <p class="note"><strong>Tu as une version antérieure à la 1.3.0 ?</strong> Installe une fois la version complète : la 1.3.0 est la première qui sait se mettre à jour toute seule.</p>
+  </section>
+
+  <section id="mettre-a-jour">
+    <h2>Mettre à jour</h2>
+    <div class="colonnes">
+      <div class="carte"><h3>Depuis le logiciel (recommandé)</h3><p>Au démarrage, SimuCircuit signale une nouvelle version. Clique sur <strong>Mettre à jour</strong>, saisis le mot de passe (une seule fois si tu coches « Se souvenir ») : il télécharge, installe et redémarre. Aussi dans le menu <strong>Aide → Rechercher une mise à jour</strong>.</p></div>
+      <div class="carte"><h3>À la main</h3><p>Télécharge l'archive de mise à jour (lien en haut de la page), ouvre-la avec 7-Zip et le mot de passe, ferme SimuCircuit, puis double-clique sur <strong>Installer la mise à jour.bat</strong>. Rien n'est désinstallé.</p></div>
+    </div>
+  </section>
+
+  <section id="licences">
+    <h2>Licences et code source</h2>
+    <p>SimuCircuit s'appuie sur des logiciels libres : Electron, avr8js, rp2040js, wokwi-elements, Monaco Editor, arduino-cli, les compilateurs et cores Arduino, ESP32 et RP2040, MicroPython, 7-Zip, et une version modifiée du QEMU d'Espressif. La liste complète, avec versions, licences et liens vers les sources officielles, est dans le dossier <code>LICENCES</code> de l'installation et de chaque archive (<code>LISEZMOI-LICENCES.txt</code>).</p>
+    <p>Le <strong>code source complet du QEMU modifié</strong> (GPL v2), avec les modifications et le script de compilation, est publié sans mot de passe : <a id="sources" href="#">sources-qemu-esp32-simucircuit.7z</a>. Pour les autres composants sous GPL ou LGPL, redistribués sans modification, les sources sont aux adresses officielles indiquées, et une copie peut être demandée à l'auteur pendant trois ans (<a id="demande" href="#">ouvrir une demande</a>).</p>
+  </section>
+</main>
+<footer>
+  Logiciel personnel, gratuit, fourni sans garantie. Non affilié à Arduino, Espressif, Raspberry Pi ni Tinkercad : ces noms sont cités uniquement pour indiquer la compatibilité.<br>
+  <a href="#licences">Licences et code source</a> · <a id="versions" href="#">Toutes les versions</a>
+</footer>
+<script>
+// L'adresse du dépôt se déduit de celle de la page : <pseudo>.github.io/simucircuit
+const pseudo = location.hostname.endsWith('.github.io') ? location.hostname.split('.')[0] : null;
+const depot = pseudo && `https://github.com/${pseudo}/simucircuit`;
+const $ = (id) => document.getElementById(id);
+const mo = (octets) => (octets >= 1e9 ? (octets / 1e9).toFixed(1).replace('.', ',') + ' Go' : Math.round(octets / 1e6) + ' Mo');
+const plusRecente = (a, b) => a.localeCompare(b, undefined, { numeric: true }) > 0;
+if (depot) {
+  // Repli si l'API ne répond pas : tous les liens mènent à la page des versions.
+  for (const id of ['telecharger', 'maj', 'sources', 'versions']) $(id).href = depot + '/releases/latest';
+  $('versions').href = depot + '/releases';
+  $('demande').href = depot + '/issues';
+  $('numero').innerHTML = `<a href="${depot}/releases/latest">voir la page des versions</a>`;
+  fetch(`https://api.github.com/repos/${pseudo}/simucircuit/releases?per_page=30`).then((r) => (r.ok ? r.json() : Promise.reject())).then((versions) => {
+    const derniere = versions.find((v) => !v.draft && !v.prerelease);
+    if (!derniere) return;
+    const fichier = (v, nom) => v.assets.find((a) => a.name === nom);
+    const numero = derniere.tag_name.replace(/^v/, '');
+    $('numero').textContent = numero;
+    $('date').textContent = 'Publiée le ' + new Date(derniere.published_at).toLocaleDateString('fr-FR', { day: 'numeric', month: 'long', year: 'numeric' });
+    $('nouveautes').textContent = derniere.body || '';
+    // L'installeur complet n'est pas joint à chaque version : on prend le plus récent.
+    const complete = versions.map((v) => fichier(v, 'SimuCircuit-Installation.7z')).find(Boolean);
+    if (complete) { $('telecharger').href = complete.browser_download_url; $('taille-complete').textContent = `Archive de ${mo(complete.size)}, protégée par mot de passe.`; }
+    const paquet = fichier(derniere, 'SimuCircuit-MiseAJour.7z');
+    if (paquet) { $('maj').href = paquet.browser_download_url; $('taille-maj').textContent = `(${mo(paquet.size)})`; }
+    const sources = versions.map((v) => fichier(v, 'sources-qemu-esp32-simucircuit.7z')).find(Boolean);
+    if (sources) { $('sources').href = sources.browser_download_url; $('sources').textContent += ` (${mo(sources.size)})`; }
+    // Arrivée depuis le logiciel (menu Aide → Page du logiciel) : ?version=X
+    const installee = new URLSearchParams(location.search).get('version');
+    if (installee && /^[\d.]+$/.test(installee)) {
+      const bandeau = $('bandeau');
+      bandeau.hidden = false;
+      if (plusRecente(numero, installee)) bandeau.innerHTML = `<strong>Mise à jour disponible : ${installee} → ${numero}</strong><br><a href="${paquet ? paquet.browser_download_url : depot + '/releases/latest'}">Télécharger la mise à jour</a>, ou dans le logiciel : Aide → Rechercher une mise à jour.`;
+      else bandeau.textContent = `Tu as déjà la dernière version (${installee}) ✓`;
+    }
+  }).catch(() => {});
+}
+</script>
+</body>
+</html>
